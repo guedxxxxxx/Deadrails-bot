@@ -56,7 +56,7 @@ Discover the best classes and trains to boost your in-game experience.
 Payments are made via LTC or Robux. The *"Everything in-game"* bundle gives you full access to all items in the game for only 50 Robux!
 
 💸 **Special promotions:**  
-- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost
+- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost  
 - Orders that hit exactly 40 Robux pay the full 40 Robux with a dedicated payment link.  
 - Orders below 40 Robux pay the normal total based on selected items.
 
@@ -123,7 +123,7 @@ client.on('interactionCreate', async interaction => {
 
         const embed = {
           title: '🛒 Order Summary',
-          description: `🧾 Everything in-game = 50 robux\n\n📦 **Total:** 50 robux ($${usd})`,
+          description: `🧾 Everything in-game = 50 robux\n\n📦 **Total:** 50 robux ($${usd})\n\n⚠️ **Important:** If you're buying multiple of the same item, you must buy, delete it from your Roblox inventory, and buy again — otherwise Roblox won't let you purchase twice.`,
           color: 0x00b0f4
         };
 
@@ -132,9 +132,9 @@ client.on('interactionCreate', async interaction => {
           description: `
 ⚠️ **Please wait for support to arrive before making the payment!**
 
-**Payment methods below**
-🔸 **For LTC:** \`${LTC_ADDRESS}\`
-🔸 **For Robux:** [Payment Link](${robuxLink})
+**Payment methods below**  
+🔸 **For LTC:** \`${LTC_ADDRESS}\`  
+🔸 **For Robux:** [Click here to buy the gamepass for Everything (50 Robux)](${robuxLink})
 
 🔸 **Coin:** Litecoin (LTC)  
 🔸 **Network:** LTC Mainnet  
@@ -244,7 +244,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = {
         title: '🛒 Order Summary',
-        description: `${productListText}\n\n📦 **Total:** ${total} robux ($${usd})\n${promoNote}`,
+        description: `${productListText}\n\n📦 **Total:** ${total} robux ($${usd})\n${promoNote}\n\n⚠️ **Important:** If you're buying multiple of the same item, you must buy, delete it from your Roblox inventory, and buy again — otherwise Roblox won't let you purchase twice.`,
         color: 0x00b0f4
       };
 
@@ -253,9 +253,9 @@ client.on('interactionCreate', async interaction => {
         description: `
 ⚠️ **Please wait for support to arrive before making the payment!**
 
-**Payment methods below**
-🔸 **For LTC:** \`${LTC_ADDRESS}\`
-🔸 **For Robux:** [Payment Link](${robuxLink})
+**Payment methods below**  
+🔸 **For LTC:** \`${LTC_ADDRESS}\`  
+🔸 **For Robux:** [Click here to buy the gamepass for ${displayName} (20 Robux)](${robuxLink})
 
 🔸 **Coin:** Litecoin (LTC)  
 🔸 **Network:** LTC Mainnet  
