@@ -17,10 +17,10 @@ const client = new Client({
 
 const GUEDX_ID = '955969285686181898';
 
-const userTickets = new Map();
-const userOrders = new Map();
-const userItems = new Map();
-const userEmbeds = new Map();
+const userTickets = new Map(); // userId => channelId
+const userOrders = new Map();  // userId => totalRobux
+const userItems = new Map();   // userId => [{name, emoji, price}]
+const userEmbeds = new Map();  // userId => messageId of ticket embed
 
 const LTC_ADDRESS = 'ltc1qr3lqtfc4em5mkfjrhjuh838nnhnpswpfxtqsu8';
 
@@ -53,14 +53,14 @@ client.on('messageCreate', async message => {
       content: `🚂 **Welcome to the Dead Rails Shop!** 🚂
 
 Discover the best classes and trains to boost your in-game experience.  
-Payments are made via LTC or Robux. The *"Everything in-game"* bundle which gives you full access for only 50 Robux!
+Payments are made via LTC or Robux. The *"Everything in-game"* bundle gives you full access to all items in the game for only 50 Robux!
 
 💸 **Special promotions:**  
-- Buy **more than 3 products** and pay a flat rate of **50 Robux** for the entire order!  
+- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost
 - Orders that hit exactly 40 Robux pay the full 40 Robux with a dedicated payment link.  
 - Orders below 40 Robux pay the normal total based on selected items.
 
-📦 Click the button below to select your products and get ready for an amazing journey!`,
+📦 Click the button below to select your products and have a great day!`,
       components: [row]
     });
   }
@@ -73,9 +73,9 @@ client.on('interactionCreate', async interaction => {
         .setCustomId('category_select')
         .setPlaceholder('Choose a category')
         .addOptions([
-          { label: 'Classes', value: 'classes', emoji: '🗡️' },
-          { label: 'Trains', value: 'trains', emoji: '🚆' },
-          { label: 'Everything', value: 'everything', emoji: '📜' }
+          { label: 'Classes', value: 'classes', emoji: '⚔️' },
+          { label: 'Trains', value: 'trains', emoji: '🚂' },
+          { label: 'Everything', value: 'everything', emoji: '🧾' }
         ]);
 
       const row = new ActionRowBuilder().addComponents(menu);
@@ -123,7 +123,7 @@ client.on('interactionCreate', async interaction => {
 
         const embed = {
           title: '🛒 Order Summary',
-          description: `📜 Everything in-game = 50 robux\n\n📦 **Total:** 50 robux ($${usd})`,
+          description: `🧾 Everything in-game = 50 robux\n\n📦 **Total:** 50 robux ($${usd})`,
           color: 0x00b0f4
         };
 
@@ -179,21 +179,25 @@ client.on('interactionCreate', async interaction => {
       }
 
       const classOptions = [
-        'Musician', 'Miner', 'Doctor', 'Arsonist', 'Packmaster', 'Necromancer',
-        'Conductor', 'Werewolf', 'The Alamo', 'High Roller', 'Cowboy', 'Hunter',
-        'Milkman', 'Demolitionist', 'Survivalist', 'Priest', 'Zombie', 'Vampire',
-        'President', 'Ironclad'
+        { label: 'Musician', emoji: '🎵' }, { label: 'Miner', emoji: '⛏️' }, { label: 'Doctor', emoji: '🩺' },
+        { label: 'Arsonist', emoji: '🔥' }, { label: 'Packmaster', emoji: '📦' }, { label: 'Necromancer', emoji: '💀' },
+        { label: 'Conductor', emoji: '🎼' }, { label: 'Werewolf', emoji: '🐺' }, { label: 'The Alamo', emoji: '🏰' },
+        { label: 'High Roller', emoji: '🎲' }, { label: 'Cowboy', emoji: '🤠' }, { label: 'Hunter', emoji: '🏹' },
+        { label: 'Milkman', emoji: '🥛' }, { label: 'Demolitionist', emoji: '💣' }, { label: 'Survivalist', emoji: '🪖' },
+        { label: 'Priest', emoji: '✝️' }, { label: 'Zombie', emoji: '🧟' }, { label: 'Vampire', emoji: '🧛' },
+        { label: 'President', emoji: '🇺🇸' }, { label: 'Ironclad', emoji: '🛡️' }
       ];
 
       const trainOptions = [
-        'Cattle Car', 'Gold Rush', 'Passenger Train', 'Armored Train', 'Ghost Train', 'Wooden Train'
+        { label: 'Cattle Car', emoji: '🐄' }, { label: 'Gold Rush', emoji: '🏆' }, { label: 'Passenger Train', emoji: '🚆' },
+        { label: 'Armored Train', emoji: '🚋' }, { label: 'Ghost Train', emoji: '👻' }, { label: 'Wooden Train', emoji: '🪵' }
       ];
 
-      const makeOptions = (labels) =>
-        labels.map(label => ({
-          label: label,
-          value: label.toLowerCase().replace(/ /g, '_'),
-          emoji: '🎯'
+      const makeOptions = (options) =>
+        options.map(opt => ({
+          label: opt.label,
+          value: opt.label.toLowerCase().replace(/ /g, '_'),
+          emoji: opt.emoji
         }));
 
       const menu = new StringSelectMenuBuilder()
@@ -213,7 +217,7 @@ client.on('interactionCreate', async interaction => {
       const selectedProduct = interaction.values[0];
       const displayName = selectedProduct.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-      const productEntry = { name: displayName, emoji: '🎯', price: 20 };
+      const productEntry = { name: displayName, emoji: '🛒', price: 20 };
       const prevList = userItems.get(user.id) || [];
       const newList = [...prevList, productEntry];
       userItems.set(user.id, newList);
@@ -308,8 +312,8 @@ client.on('interactionCreate', async interaction => {
         .setCustomId('additional_purchase')
         .setPlaceholder('Anything else?')
         .addOptions([
-          { label: 'Yes', value: 'yes', emoji: '✅' },
-          { label: 'No', value: 'no', emoji: '❌' }
+          { label: 'Yes', value: 'yes', emoji: '👍' },
+          { label: 'No', value: 'no', emoji: '✖️' }
         ]);
       const moreRow = new ActionRowBuilder().addComponents(moreMenu);
       await interaction.followUp({ content: 'Do you want to purchase anything else?', components: [moreRow], ephemeral: true });
@@ -324,9 +328,9 @@ client.on('interactionCreate', async interaction => {
           .setCustomId('category_select')
           .setPlaceholder('Choose a category')
           .addOptions([
-            { label: 'Classes', value: 'classes', emoji: '🗡️' },
-            { label: 'Trains', value: 'trains', emoji: '🚆' },
-            { label: 'Everything', value: 'everything', emoji: '📜' }
+            { label: 'Classes', value: 'classes', emoji: '⚔️' },
+            { label: 'Trains', value: 'trains', emoji: '🚂' },
+            { label: 'Everything', value: 'everything', emoji: '🧾' }
           ]);
         const row = new ActionRowBuilder().addComponents(menu);
         await interaction.update({ content: 'Select a category below:', components: [row] });
