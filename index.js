@@ -28,10 +28,12 @@ function calculateDollarAmount(robux) {
   return (robux / 20 * 0.25).toFixed(2);
 }
 
-function getRobuxLink(robux) {
-  if (robux <= 20) return 'https://www.roblox.com/game-pass/1044850980/20';
-  if (robux <= 40) return 'http://www.roblox.com/game-pass/1027394973/40';
-  return 'https://www.roblox.com/game-pass/1031209691/50';
+function getRobuxLink(robux, productName) {
+  let link;
+  if (robux <= 20) link = 'https://www.roblox.com/game-pass/1044850980/20';
+  else if (robux <= 40) link = 'http://www.roblox.com/game-pass/1027394973/40';
+  else link = 'https://www.roblox.com/game-pass/1031209691/50';
+  return `[Click here to buy the gamepass for ${productName} (${robux} Robux)](${link})`;
 }
 
 client.once('ready', () => {
@@ -56,7 +58,7 @@ Discover the best classes and trains to boost your in-game experience.
 Payments are made via LTC or Robux. The *"Everything in-game"* bundle gives you full access to all items in the game for only 50 Robux!
 
 💸 **Special promotions:**  
-- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost  
+- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost
 - Orders that hit exactly 40 Robux pay the full 40 Robux with a dedicated payment link.  
 - Orders below 40 Robux pay the normal total based on selected items.
 
@@ -119,11 +121,11 @@ client.on('interactionCreate', async interaction => {
 
         const total = 50;
         const usd = calculateDollarAmount(total);
-        const robuxLink = getRobuxLink(total);
+        const robuxLink = getRobuxLink(total, "Everything");
 
         const embed = {
           title: '🛒 Order Summary',
-          description: `🧾 Everything in-game = 50 robux\n\n📦 **Total:** 50 robux ($${usd})\n\n⚠️ **Important:** If you're buying multiple of the same item, you must buy, delete it from your Roblox inventory, and buy again — otherwise Roblox won't let you purchase twice.`,
+          description: `🧾 Everything in-game = 50 robux\n\n📦 **Total:** 50 robux ($${usd})`,
           color: 0x00b0f4
         };
 
@@ -132,9 +134,9 @@ client.on('interactionCreate', async interaction => {
           description: `
 ⚠️ **Please wait for support to arrive before making the payment!**
 
-**Payment methods below**  
-🔸 **For LTC:** \`${LTC_ADDRESS}\`  
-🔸 **For Robux:** [Click here to buy the gamepass for Everything (50 Robux)](${robuxLink})
+**Payment methods below**
+🔸 **For LTC:** \`${LTC_ADDRESS}\`
+🔸 **For Robux:** ${robuxLink}
 
 🔸 **Coin:** Litecoin (LTC)  
 🔸 **Network:** LTC Mainnet  
@@ -217,8 +219,18 @@ client.on('interactionCreate', async interaction => {
       const selectedProduct = interaction.values[0];
       const displayName = selectedProduct.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-      const productEntry = { name: displayName, emoji: '🛒', price: 20 };
       const prevList = userItems.get(user.id) || [];
+      const alreadyAdded = prevList.find(item => item.name.toLowerCase() === displayName.toLowerCase());
+
+      if (alreadyAdded) {
+        await interaction.reply({
+          content: `⚠️ You already chose this product. You cannot purchase the same class or train twice.`,
+          ephemeral: true
+        });
+        return;
+      }
+
+      const productEntry = { name: displayName, emoji: '🛒', price: 20 };
       const newList = [...prevList, productEntry];
       userItems.set(user.id, newList);
 
@@ -229,7 +241,7 @@ client.on('interactionCreate', async interaction => {
       const usd = calculateDollarAmount(total);
       userOrders.set(user.id, total);
 
-      const robuxLink = getRobuxLink(total);
+      const robuxLink = getRobuxLink(total, displayName);
 
       const productListText = newList.map(p => `${p.emoji} ${p.name} = 20 robux`).join('\n');
       let promoNote = '';
@@ -244,7 +256,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = {
         title: '🛒 Order Summary',
-        description: `${productListText}\n\n📦 **Total:** ${total} robux ($${usd})\n${promoNote}\n\n⚠️ **Important:** If you're buying multiple of the same item, you must buy, delete it from your Roblox inventory, and buy again — otherwise Roblox won't let you purchase twice.`,
+        description: `${productListText}\n\n📦 **Total:** ${total} robux ($${usd})\n${promoNote}`,
         color: 0x00b0f4
       };
 
@@ -253,9 +265,9 @@ client.on('interactionCreate', async interaction => {
         description: `
 ⚠️ **Please wait for support to arrive before making the payment!**
 
-**Payment methods below**  
-🔸 **For LTC:** \`${LTC_ADDRESS}\`  
-🔸 **For Robux:** [Click here to buy the gamepass for ${displayName} (20 Robux)](${robuxLink})
+**Payment methods below**
+🔸 **For LTC:** \`${LTC_ADDRESS}\`
+🔸 **For Robux:** ${robuxLink}
 
 🔸 **Coin:** Litecoin (LTC)  
 🔸 **Network:** LTC Mainnet  
