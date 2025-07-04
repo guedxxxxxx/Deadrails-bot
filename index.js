@@ -53,7 +53,7 @@ client.on('messageCreate', async message => {
       content: `🚂 **Welcome to the Dead Rails Shop!** 🚂
 
 Discover the best classes and trains to boost your in-game experience.  
-**Every single product costs 20 Robux**, except the *"Everything in-game"* bundle which gives you full access for only 50 Robux!
+Payments are made via LTC or Robux. The *"Everything in-game"* bundle which gives you full access for only 50 Robux!
 
 💸 **Special promotions:**  
 - Buy **more than 3 products** and pay a flat rate of **50 Robux** for the entire order!  
