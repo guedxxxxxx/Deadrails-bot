@@ -42,6 +42,11 @@ client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
   if (message.content === '!deadrails') {
+    if (message.author.id !== GUEDX_ID) {
+      await message.reply('I only take orders from my sugar daddy.');
+      return;
+    }
+
     const button = new ButtonBuilder()
       .setCustomId('open_menu')
       .setLabel('Select Your Product')
@@ -56,7 +61,7 @@ Discover the best classes and trains to boost your in-game experience.
 Payments are made via LTC or Robux. The *"Everything in-game"* bundle gives you full access to all items in the game for only 50 Robux!
 
 💸 **Special promotions:**  
-- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost
+- If your order goes higher than 40 Robux, the price is automatically set to 50, and you can get anything as an additional for no extra cost.
 - Orders that hit exactly 40 Robux pay the full 40 Robux with a dedicated payment link.  
 - Orders below 40 Robux pay the normal total based on selected items.
 
