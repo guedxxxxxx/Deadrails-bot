@@ -28,12 +28,10 @@ function calculateDollarAmount(robux) {
   return (robux / 20 * 0.25).toFixed(2);
 }
 
-function getRobuxLink(robux, productName) {
-  let link;
-  if (robux <= 20) link = 'https://www.roblox.com/game-pass/1044850980/20';
-  else if (robux <= 40) link = 'http://www.roblox.com/game-pass/1027394973/40';
-  else link = 'https://www.roblox.com/game-pass/1031209691/50';
-  return `[Click here to buy the gamepass for ${productName} (${robux} Robux)](${link})`;
+function getRobuxLink(robux) {
+  if (robux <= 20) return 'https://www.roblox.com/game-pass/1044850980/20';
+  if (robux <= 40) return 'http://www.roblox.com/game-pass/1027394973/40';
+  return 'https://www.roblox.com/game-pass/1031209691/50';
 }
 
 client.once('ready', () => {
@@ -86,9 +84,7 @@ client.on('interactionCreate', async interaction => {
 
     if (interaction.customId === 'close_ticket') {
       const channel = interaction.channel;
-
       await interaction.reply({ content: '✅ Ticket will be closed.', ephemeral: true });
-
       userTickets.forEach((chId, userId) => {
         if (chId === channel.id) {
           userTickets.delete(userId);
@@ -97,7 +93,6 @@ client.on('interactionCreate', async interaction => {
           userEmbeds.delete(userId);
         }
       });
-
       await channel.delete();
     }
 
@@ -121,7 +116,7 @@ client.on('interactionCreate', async interaction => {
 
         const total = 50;
         const usd = calculateDollarAmount(total);
-        const robuxLink = getRobuxLink(total, "Everything");
+        const robuxLink = getRobuxLink(total);
 
         const embed = {
           title: '🛒 Order Summary',
@@ -136,7 +131,7 @@ client.on('interactionCreate', async interaction => {
 
 **Payment methods below**
 🔸 **For LTC:** \`${LTC_ADDRESS}\`
-🔸 **For Robux:** ${robuxLink}
+🔸 **For Robux:** [Click here to buy Everything for 50 Robux](${robuxLink})
 
 🔸 **Coin:** Litecoin (LTC)  
 🔸 **Network:** LTC Mainnet  
@@ -176,7 +171,7 @@ client.on('interactionCreate', async interaction => {
         userTickets.set(user.id, channel.id);
         userEmbeds.set(user.id, message.id);
 
-        await interaction.reply({ content: '✅ Ticket created for Everything access!', ephemeral: true });
+        await interaction.update({ content: '✅ Ticket created for Everything access!', components: [] });
         return;
       }
 
@@ -205,9 +200,7 @@ client.on('interactionCreate', async interaction => {
       const menu = new StringSelectMenuBuilder()
         .setCustomId('product_select')
         .setPlaceholder(`Choose a ${selectedCategory === 'classes' ? 'class' : 'train'}`)
-        .addOptions(selectedCategory === 'classes'
-          ? makeOptions(classOptions)
-          : makeOptions(trainOptions));
+        .addOptions(selectedCategory === 'classes' ? makeOptions(classOptions) : makeOptions(trainOptions));
 
       const row = new ActionRowBuilder().addComponents(menu);
       await interaction.update({ content: 'Select a product below:', components: [row] });
@@ -220,13 +213,8 @@ client.on('interactionCreate', async interaction => {
       const displayName = selectedProduct.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
       const prevList = userItems.get(user.id) || [];
-      const alreadyAdded = prevList.find(item => item.name.toLowerCase() === displayName.toLowerCase());
-
-      if (alreadyAdded) {
-        await interaction.reply({
-          content: `⚠️ You already chose this product. You cannot purchase the same class or train twice.`,
-          ephemeral: true
-        });
+      if (prevList.find(p => p.name === displayName)) {
+        await interaction.update({ content: `⚠️ You already added **${displayName}**. Since you can't buy duplicates, please remove it first if needed.`, components: [] });
         return;
       }
 
@@ -235,24 +223,17 @@ client.on('interactionCreate', async interaction => {
       userItems.set(user.id, newList);
 
       let total = newList.reduce((sum, item) => sum + item.price, 0);
-
       if (newList.length > 3) total = 50;
 
       const usd = calculateDollarAmount(total);
       userOrders.set(user.id, total);
-
-      const robuxLink = getRobuxLink(total, displayName);
+      const robuxLink = getRobuxLink(total);
 
       const productListText = newList.map(p => `${p.emoji} ${p.name} = 20 robux`).join('\n');
       let promoNote = '';
-
-      if (newList.length > 3) {
-        promoNote = `💸 **Promo:** You bought more than 3 products, so the total price is fixed at 50 Robux!`;
-      } else if (total > 40) {
-        promoNote = `💸 **Promo:** Your total passed 40 Robux, so the 50 Robux payment link is used.`;
-      } else if (total === 40) {
-        promoNote = `💸 **Tier:** Your total is exactly 40 Robux, using the 40 Robux link.`;
-      }
+      if (newList.length > 3) promoNote = `💸 **Promo:** You bought more than 3 products, so the total price is fixed at 50 Robux!`;
+      else if (total > 40) promoNote = `💸 **Promo:** Your total passed 40 Robux, so the 50 Robux payment link is used.`;
+      else if (total === 40) promoNote = `💸 **Tier:** Your total is exactly 40 Robux, using the 40 Robux link.`;
 
       const embed = {
         title: '🛒 Order Summary',
@@ -267,7 +248,7 @@ client.on('interactionCreate', async interaction => {
 
 **Payment methods below**
 🔸 **For LTC:** \`${LTC_ADDRESS}\`
-🔸 **For Robux:** ${robuxLink}
+🔸 **For Robux:** [Click here to buy your order for ${total} Robux](${robuxLink})
 
 🔸 **Coin:** Litecoin (LTC)  
 🔸 **Network:** LTC Mainnet  
@@ -296,7 +277,7 @@ client.on('interactionCreate', async interaction => {
         const embedMsg = await existingChannel.messages.fetch(embedMsgId);
 
         await embedMsg.edit({ embeds: [embed, paymentEmbed], components: [buttonsRow] });
-        await interaction.reply({ content: '✅ Product added to your order!', ephemeral: true });
+        await interaction.update({ content: '✅ Product added to your order!', components: [] });
       } else {
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
@@ -317,7 +298,7 @@ client.on('interactionCreate', async interaction => {
         userTickets.set(user.id, channel.id);
         userEmbeds.set(user.id, message.id);
 
-        await interaction.reply({ content: '✅ Ticket created and product added!', ephemeral: true });
+        await interaction.update({ content: '✅ Ticket created and product added!', components: [] });
       }
 
       const moreMenu = new StringSelectMenuBuilder()
@@ -328,6 +309,7 @@ client.on('interactionCreate', async interaction => {
           { label: 'No', value: 'no', emoji: '✖️' }
         ]);
       const moreRow = new ActionRowBuilder().addComponents(moreMenu);
+
       await interaction.followUp({ content: 'Do you want to purchase anything else?', components: [moreRow], ephemeral: true });
     }
 
